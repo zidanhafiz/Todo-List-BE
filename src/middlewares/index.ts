@@ -2,6 +2,7 @@ import { findByRefreshToken } from '@/model/userModel';
 import { Decode } from '@/types/costum';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import { rateLimit } from 'express-rate-limit';
 
 // Middleware for verify JWT before access the route
 export const verifyJWT = async (req: Request, res: Response, next: NextFunction) => {
@@ -55,6 +56,7 @@ export const isAuthorUser = async (req: Request, res: Response, next: NextFuncti
   return next();
 };
 
+// Middleware for check is user logined and is user exist on database (authentication) and protect all routes.
 export const isAuthenticate = async (req: Request, res: Response, next: NextFunction) => {
   const refreshToken = req.cookies?.jwt;
 
@@ -67,3 +69,15 @@ export const isAuthenticate = async (req: Request, res: Response, next: NextFunc
 
   return next();
 };
+
+// Middleware for limit login request
+export const loginLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minutes
+  limit: 3, // Limit each IP to 3 requests per `window` (here, per 1 minutes)
+  message: {
+    message:
+      'Too many login attempts from this IP! Please try again after a 60 second pause',
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
