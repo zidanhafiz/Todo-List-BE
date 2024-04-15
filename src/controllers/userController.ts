@@ -1,7 +1,12 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import { createData, findByEmail, findMany, updateRefreshToken } from '@model/userModel';
-import jwt from 'jsonwebtoken';
+import {
+  createData,
+  deleteById,
+  findById,
+  findMany,
+  updateUsername,
+} from '@model/userModel';
 
 export const createUser = async (req: Request, res: Response) => {
   const { email, username, password } = req.body;
@@ -45,12 +50,69 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await findMany();
 
     return res.status(200).send(users);
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({
+      message: error,
+    });
+  }
+};
+
+export const getUserById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const user = await findById(id);
+
+    if (!user) return res.status(404).send({ message: `User with id:${id} not found!` });
+
+    return res.status(200).send(user);
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({
+      message: error,
+    });
+  }
+};
+
+export const updateUserById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { username } = req.body;
+
+    if (!username) return res.status(400).send({ message: 'Username required!' });
+
+    const updatedUser = await updateUsername(id, username);
+
+    return res.status(201).send({
+      message: 'User updated!',
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({
+      message: error,
+    });
+  }
+};
+
+export const deleteUserById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Delete user data in database
+    await deleteById(id);
+
+    // Clear JWT refresh token in cookie
+    res.clearCookie('jwt', { httpOnly: true, secure: true, sameSite: 'none' });
+
+    return res.status(201).send({
+      message: 'Success deleted!',
+    });
   } catch (error) {
     console.error(error);
     return res.status(400).send({

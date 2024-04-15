@@ -1,3 +1,4 @@
+import { findByRefreshToken } from '@/model/userModel';
 import { Decode } from '@/types/costum';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
@@ -16,7 +17,7 @@ export const verifyJWT = async (req: Request, res: Response, next: NextFunction)
       process.env.ACCESS_TOKEN_SECRET as string
     ) as Decode;
 
-    req.user = decoded.username;
+    req.user = decoded.userId;
 
     return next();
   } catch (error) {
@@ -32,6 +33,37 @@ export const isLogin = async (req: Request, res: Response, next: NextFunction) =
   if (refreshToken) {
     return res.sendStatus(403);
   }
+
+  return next();
+};
+
+// Middleware for protect /user/:id routes when is not author of user
+export const isAuthorUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const refreshToken = req.cookies?.jwt;
+
+  if (!refreshToken) return res.sendStatus(401);
+
+  // Check user is it match with database
+  const user = await findByRefreshToken(refreshToken);
+
+  if (!user) return res.sendStatus(401);
+
+  // Check if user's id is not equal to request id
+  if (user.id !== id) return res.sendStatus(401);
+
+  return next();
+};
+
+export const isAuthenticate = async (req: Request, res: Response, next: NextFunction) => {
+  const refreshToken = req.cookies?.jwt;
+
+  if (!refreshToken) return res.sendStatus(401);
+
+  // Check user is it match with database
+  const user = await findByRefreshToken(refreshToken);
+
+  if (!user) return res.sendStatus(401);
 
   return next();
 };

@@ -32,12 +32,12 @@ export const handleLogin = async (req: Request, res: Response) => {
 
     // Create JWTs
     const refreshToken = jwt.sign(
-      { username: foundUser.username },
+      { userId: foundUser.id },
       process.env.REFRESH_TOKEN_SECRET as string,
       { expiresIn: '1d' }
     );
     const accessToken = jwt.sign(
-      { username: foundUser.username },
+      { userId: foundUser.id },
       process.env.ACCESS_TOKEN_SECRET as string,
       { expiresIn: '15m' }
     );
@@ -89,11 +89,11 @@ export const refreshToken = async (req: Request, res: Response) => {
       (err, d) => {
         const decoded = d as Decode;
         // Check if error or username is not match with refresh token's payload
-        if (err || decoded.username !== userExist.username) return res.sendStatus(403);
+        if (err || decoded.userId !== userExist.id) return res.sendStatus(403);
 
         // Generate new access token
         const accessToken = jwt.sign(
-          { username: userExist.username },
+          { userId: userExist.id },
           process.env.ACCESS_TOKEN_SECRET as string,
           { expiresIn: '15m' }
         );

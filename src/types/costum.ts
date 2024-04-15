@@ -8,7 +8,7 @@ export type User = {
 
 export type Decode = string &
   JwtPayload & {
-    username: string;
+    userId: string;
     iat: number;
     exp: number;
   };

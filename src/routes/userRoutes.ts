@@ -1,9 +1,20 @@
-import { verifyJWT } from '@/middlewares';
-import { getAllUsers } from '@controllers/userController';
+import { isAuthorUser } from '@/middlewares';
+import {
+  deleteUserById,
+  getAllUsers,
+  getUserById,
+  updateUserById,
+} from '@controllers/userController';
 import { Router } from 'express';
 
 const router = Router();
 
-router.get('/', verifyJWT, getAllUsers);
+router.get('/', getAllUsers);
+
+router
+  .route('/:id')
+  .get(getUserById)
+  .patch(isAuthorUser, updateUserById)
+  .delete(isAuthorUser, deleteUserById);
 
 export default router;
