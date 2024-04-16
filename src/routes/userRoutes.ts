@@ -1,4 +1,6 @@
 import { isAuthorUser } from '@/middlewares';
+import { updateUserValidator } from '@/middlewares/userValidator';
+import { upload } from '@/utils';
 import {
   deleteUserById,
   getAllUsers,
@@ -14,7 +16,7 @@ router.get('/', getAllUsers);
 router
   .route('/:id')
   .get(getUserById)
-  .patch(isAuthorUser, updateUserById)
+  .patch(isAuthorUser, upload.none(), updateUserValidator, updateUserById)
   .delete(isAuthorUser, deleteUserById);
 
 export default router;

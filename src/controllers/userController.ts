@@ -83,12 +83,13 @@ export const getUserById = async (req: Request, res: Response) => {
 };
 
 export const updateUserById = async (req: Request, res: Response) => {
+  const result = validationResult(req);
+
+  if (!result.isEmpty()) return res.status(400).send(result.array());
+
+  const { id, username } = matchedData(req);
+
   try {
-    const { id } = req.params;
-    const { username } = req.body;
-
-    if (!username) return res.status(400).send({ message: 'Username required!' });
-
     const updatedUser = await updateUsername(id, username);
 
     return res.status(201).send({
