@@ -7,13 +7,16 @@ import {
   findMany,
   updateUsername,
 } from '@model/userModel';
+import { matchedData, validationResult } from 'express-validator';
 
 export const createUser = async (req: Request, res: Response) => {
-  const { email, username, password } = req.body;
+  // Get validation result from form data
+  const result = validationResult(req);
 
-  // Check if email, username or password are empty
-  if (!email || !username || !password)
-    return res.status(400).send({ message: 'Some fields are missing!' });
+  // Check if there are error in validation return response error
+  if (!result.isEmpty()) return res.status(400).send(result.array());
+
+  const { email, username, password } = matchedData(req);
 
   try {
     // Get users and check if username or email already used

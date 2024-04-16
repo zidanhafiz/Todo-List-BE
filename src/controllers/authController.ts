@@ -3,15 +3,16 @@ import { findByEmail, findMany, updateRefreshToken } from '@model/userModel';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Decode } from '@/types/costum';
+import { matchedData, validationResult } from 'express-validator';
 
 export const handleLogin = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  // Get validation result from form data
+  const result = validationResult(req);
 
-  // If email or password are empty field
-  if (!email || !password)
-    return res.status(400).send({
-      message: 'Some fields are missing!',
-    });
+  // Check if there are error in validation return response error
+  if (!result.isEmpty()) return res.status(400).send(result.array());
+
+  const { email, password } = matchedData(req);
 
   try {
     // Find the user in the database
