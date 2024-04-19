@@ -21,3 +21,9 @@ export type UserSelect = {
   updatedAt?: boolean;
   refreshToken?: boolean;
 };
+
+export type Todo = {
+  title: string;
+  description: string;
+  finished: boolean;
+};

@@ -3,6 +3,7 @@ import { Decode } from '@/types/costum';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { rateLimit } from 'express-rate-limit';
+import { findById as findTodoById } from '@/model/todoModel';
 
 // Middleware for verify JWT before access the route
 export const verifyJWT = async (req: Request, res: Response, next: NextFunction) => {
@@ -52,6 +53,29 @@ export const isAuthorUser = async (req: Request, res: Response, next: NextFuncti
 
   // Check if user's id is not equal to request id
   if (user.id !== id) return res.sendStatus(401);
+
+  return next();
+};
+
+// Middleware for protect /todos/:id routes when is not author of todo
+export const isAuthorTodo = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const refreshToken = req.cookies?.jwt;
+
+  if (!refreshToken) return res.sendStatus(401);
+
+  // Check user is it match with database
+  const user = await findByRefreshToken(refreshToken);
+
+  if (!user) return res.sendStatus(401);
+
+  // Check todo is it exist in database
+  const todo = await findTodoById(id);
+
+  if (!todo) return res.sendStatus(401);
+
+  // Check if user's id is not equal to request id
+  if (user.id !== todo.authorId) return res.sendStatus(401);
 
   return next();
 };
